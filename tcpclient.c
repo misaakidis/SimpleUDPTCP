@@ -27,6 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <stdio.h>
 #include <unistd.h>
 
+#include "constants.h"
+
 //file found = 1
 //file not found = 0
 
@@ -53,21 +55,21 @@ int main (int argc, char *argv[]) {
     if(argc != 3)//check number of argc in command line
     {
         fprintf(stderr,"Usage: tcpclient [IP_server] [server_port]\n");
-        return -1;
+        return USAGE_ERR;
     }
 
     serverPort = atoi(argv[2]);
     if(serverPort<=0 || serverPort>65535)//check number of TCP server port
     {
         fprintf(stderr, "The port number given is wrong.\n");
-        return -2;
+        return BAD_PORT_NUM_ERR;
     }
 
     h = gethostbyname(argv[1]);
     if(h==NULL)//check assigment of TCP server host
     {
         perror("Unknown host ");
-        return -3;
+        return UNKNOWN_HOST_ERR;
     }
 
     /* Create TCP socket */
@@ -80,7 +82,7 @@ int main (int argc, char *argv[]) {
     if(sockfd < 0)//check TCP socket is created correctly
     {
         perror("Cannot open socket ");
-        return -4;
+        return SOCK_OPEN_ERR;
     }
 
     /* Bind any port number */
@@ -94,7 +96,7 @@ int main (int argc, char *argv[]) {
     {
         perror("Cannot bind on TCP port ");
         close(sockfd);
-        return -5;
+        return SOCK_BIND_ERR;
     }
 
     /* Connect to TCP server */
@@ -104,7 +106,7 @@ int main (int argc, char *argv[]) {
     {
         perror("Cannot connect ");
         close(sockfd);
-        return -6;
+        return ACC_CONN_ERR;
     }
 
     printf("Starting TCP client...\n");
@@ -124,7 +126,7 @@ int main (int argc, char *argv[]) {
     {
          perror("Error writing to socket ");
          close(sockfd);
-         return -6;
+         return SOCK_WRITE_ERR;
     }
 
     /* Read the TCP server response about the name of the file */
@@ -134,7 +136,7 @@ int main (int argc, char *argv[]) {
     {
          perror("Error reading from socket ");
          close(sockfd);
-         return -7;
+         return SOCK_READ_ERR;
     }
     if (option == fNf){// if file has not been found
         do
@@ -150,7 +152,7 @@ int main (int argc, char *argv[]) {
                 if (nBytes < 0)
                 {
                     perror("Error writing to socket");
-                    return -8;
+                    return SOCK_WRITE_ERR;
                 }
             }else if (option == 'n')//cancel file creation
             {
@@ -174,7 +176,7 @@ int main (int argc, char *argv[]) {
                {
                   perror("Error writing to socket");
                   close(sockfd);
-                  return -9;
+                  return SOCK_WRITE_ERR;
                }
             }else if (option == 'a')
             {
@@ -183,7 +185,7 @@ int main (int argc, char *argv[]) {
                   {
                      perror("Error writing to socket");
                      close(sockfd);
-                     return -10;
+                     return SOCK_WRITE_ERR;
                   }
             }else if (option == 'c')
             {
@@ -202,7 +204,7 @@ int main (int argc, char *argv[]) {
     if(fp == NULL)//check file is open correctly
     {
         fprintf(stderr, "Cannot open file.\n");
-        return -11;
+        return FILE_WRITE_ERR;
     }
     do
     {
@@ -222,7 +224,7 @@ int main (int argc, char *argv[]) {
     {
         perror("Error reading from TCP socket");
         close(sockfd);
-        return -11;
+        return SOCK_READ_ERR;
     }
     printf("%s\n",buffer);
 

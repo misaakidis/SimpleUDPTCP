@@ -23,8 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define NETWORK_BUFFER      512
-#define BACKLOG 5
+#include "constants.h"
 
 //file found = 1
 //file not found = 0
@@ -48,7 +47,7 @@ int main( int argc, char *argv[] )
 
     if(argc != 2){//check number of argc in command line
         fprintf(stderr,"Usage: tcpserver [server_port]\n");
-        return -1;
+        return USAGE_ERR;
     }
 
     printf("Starting TCP server...\n");
@@ -57,7 +56,7 @@ int main( int argc, char *argv[] )
     if(serverPort<=0 || serverPort>65535)//check number of TCP server port
     {
         fprintf(stderr, "The port number given is wrong.\n");
-        return -2;
+        return BAD_PORT_NUM_ERR;
     }
 
     /* Create a TCP socket */
@@ -66,7 +65,7 @@ int main( int argc, char *argv[] )
     if (sockfd < 0)//check TCP socket is created correctly
     {
         perror("Error opening TCP socket");
-        return-3;
+        return SOCK_OPEN_ERR;
     }
 
     /* Initialize TCP socket structure */
@@ -81,7 +80,7 @@ int main( int argc, char *argv[] )
     if (bind(sockfd, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0)//check TCP socket is bind correctly
     {
         perror("Error on binding TCP socket");
-        return -4;
+        return SOCK_BIND_ERR;
     }
 
     /* Start listening for the clients, TCP server wait for the incoming TCP client connection */
@@ -95,7 +94,7 @@ int main( int argc, char *argv[] )
     if (newsockfd < 0)//check actual connection is created correctly
     {
         perror("Error on accepting actual TCP client");
-        return -5;
+        return ACC_CONN_ERR;
     }
 
     /* Start communicating between TCP client and server */
@@ -105,7 +104,7 @@ int main( int argc, char *argv[] )
     if (nBytes < 0)
     {
         perror("Error reading from TCP socket");
-        return -6;
+        return SOCK_READ_ERR;
     }
     printf("This is the file to transffer: %s\n",buffer);
 
@@ -118,7 +117,7 @@ int main( int argc, char *argv[] )
         if (nBytes < 0)
         {
             perror("Error writing to TCP socket");
-            return-7;
+            return SOCK_WRITE_ERR;
         }
     }
     else
@@ -127,7 +126,7 @@ int main( int argc, char *argv[] )
         if (nBytes < 0)
         {
             perror("Error writing to TCP socket");
-            return-7;
+            return SOCK_WRITE_ERR;
         }
     }
 
@@ -136,7 +135,7 @@ int main( int argc, char *argv[] )
     if (nBytes < 0)
     {
         perror("Error reading from TCP socket");
-        return -8;
+        return SOCK_READ_ERR;
     }
 
     option = sample[0];
@@ -147,14 +146,14 @@ int main( int argc, char *argv[] )
         if ((file = fopen(buffer, "w")) == NULL)
         {
             fprintf(stderr, "Cannot write on file.");
-            return -9;
+            return FILE_WRITE_ERR;
         }
         break;
     case '0': //append file
         if ((file = fopen(buffer, "a+")) == NULL)
         {
             fprintf(stderr, "Cannot append to file.");
-            return -10;
+            return FILE_APP_ERR;
         }
     }
 
@@ -163,7 +162,7 @@ int main( int argc, char *argv[] )
         if(nBytes < 0)
         {
             fprintf(stderr, "Error while receiving the file.\n");
-            return -11;
+            return FILE_RCV_ERR;
         }
         fprintf(file, readBuffer);
         fprintf(stderr, readBuffer);
@@ -186,7 +185,7 @@ int main( int argc, char *argv[] )
     if (nBytes < 0)
     {
         perror("Error writing to TCP socket");
-        return-9;
+        return SOCK_WRITE_ERR;
     }
 
     return 0;
