@@ -24,9 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define MAX_USERS           10
-#define USER_PASS_LENGTH    16
-#define NETWORK_BUFFER      512
+#include "constants.h"
 
 int parseUsersFile(FILE *, char [MAX_USERS][2][USER_PASS_LENGTH]);
 bool checkIfValidUser(char *, char [MAX_USERS][2][USER_PASS_LENGTH]);
@@ -37,28 +35,28 @@ int main(int argc, char *argv[])
     if(argc != 3)
     {//Check if program is correclty called
         fprintf(stderr, "Usage: udpserver [usersfile] [server_port]\n");
-        return -1;
+        return USAGE_ERR;
     }
 
     FILE * fp = fopen(argv[1], "r");
     if (fp == NULL)
     {//Check if the user file given exists
         fprintf(stderr, "Unable to open users file.\n");
-        return -2;
+        return USERS_REPO_ERR;
     }
 
     char users[MAX_USERS][2][USER_PASS_LENGTH];
     if ( parseUsersFile(fp, users) <= 0)
     {//Parsing the users from the usersfile
         fprintf(stderr, "Cannot parse the users file.\n");
-        return -3;
+        return USERS_REPO_PARSE_ERR;
     }
 
     int serverPort = atoi(argv[2]);
     if(serverPort<=0 || serverPort>65535)
     {//Checking if the port given is valid and withing the accepted values
         fprintf(stderr, "The port number given is wrong.\n");
-        return -4;
+        return BAD_PORT_NUM_ERR;
     }
 
     printf("Starting UDP server...\n");
@@ -72,7 +70,7 @@ int main(int argc, char *argv[])
     if(sockfd < 0)
     {
         perror("Cannot open socket ");
-        return -5;
+        return SOCK_OPEN_ERR;
     }
 
     //Preparing serverAddr
@@ -87,7 +85,7 @@ int main(int argc, char *argv[])
     {
         perror("Cannot bind on UDP port");
         close(sockfd);
-        return -6;
+        return SOCK_BIND_ERR;
     }
     fprintf(stderr, "Bind on UDP port %d.\n", serverPort);
 

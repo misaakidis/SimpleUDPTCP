@@ -25,10 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define USER_PASS_LENGTH    16
-#define NETWORK_BUFFER      512
-#define LOCAL_PORT          0
-
+#include "constants.h"
 
 int main(int argc, char *argv[])
 {
@@ -38,14 +35,14 @@ int main(int argc, char *argv[])
     if(argc != 3)//check number of argc in command line
     {
         fprintf(stderr,"Usage: udpclient [IP_server] [server_port]\n");
-        return -1;
+        return USAGE_ERR;
     }
 
     int serverPort = atoi(argv[2]);//check number of TCP server port
     if(serverPort<=0 || serverPort>65535)
     {
         fprintf(stderr, "The server port number given is wrong.\n");
-        return -4;
+        return BAD_PORT_NUM_ERR;
     }
 
     int sockfd, bytesReceived;
@@ -59,7 +56,7 @@ int main(int argc, char *argv[])
     if(sockfd < 0)//check UDP socket is created correctly
     {
         perror("Cannot open socket ");
-        return -2;
+        return SOCK_OPEN_ERR;
     }
 
     hp = gethostbyname(argv[1]);
@@ -67,7 +64,7 @@ int main(int argc, char *argv[])
     {
         perror("Unknown Host ");
         close(sockfd);
-        return -3;
+        return UNKNOWN_HOST_ERR;
     }
     
     /* Bind any port number */
@@ -81,7 +78,7 @@ int main(int argc, char *argv[])
     {
         perror("Cannot bind ");
         close(sockfd);
-        return -4;
+        return SOCK_BIND_ERR;
     }
 
 
